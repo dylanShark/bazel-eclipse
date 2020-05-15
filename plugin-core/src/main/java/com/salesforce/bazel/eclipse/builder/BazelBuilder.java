@@ -62,6 +62,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.salesforce.bazel.eclipse.BazelPluginActivator;
+import com.salesforce.bazel.eclipse.abstractions.OutputStreamObserver;
 import com.salesforce.bazel.eclipse.abstractions.WorkProgressMonitor;
 import com.salesforce.bazel.eclipse.classpath.BazelClasspathContainer;
 import com.salesforce.bazel.eclipse.command.BazelCommandLineToolConfigurationException;
@@ -77,6 +78,7 @@ import com.salesforce.bazel.eclipse.model.BazelWorkspace;
 import com.salesforce.bazel.eclipse.runtime.api.JavaCoreHelper;
 import com.salesforce.bazel.eclipse.runtime.api.ResourceHelper;
 import com.salesforce.bazel.eclipse.runtime.impl.EclipseWorkProgressMonitor;
+import com.salesforce.bazel.eclipse.runtime.impl.BazelErrorStreamObserver;
 
 /**
  * Project builder that calls out to Bazel to run a workspace build.
@@ -171,8 +173,9 @@ public class BazelBuilder extends IncrementalProjectBuilder {
             return true;
         } else {
             List<String> bazelBuildFlags = getAllBazelBuildFlags(projects);
+            OutputStreamObserver errorStreamObserver = new BazelErrorStreamObserver(monitor, labelToProject, rootProject);
             // now run the actual build
-            List<BazelBuildError> errors = cmdRunner.runBazelBuild(bazelTargets, progressMonitor, bazelBuildFlags);
+            List<BazelBuildError> errors = cmdRunner.runBazelBuild(bazelTargets, progressMonitor, bazelBuildFlags, null, errorStreamObserver);
             // show build errors in the "Problems View" - this has to run even
             // if there are no errors because it also takes care of removing
             // previous errors
